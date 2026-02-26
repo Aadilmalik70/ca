@@ -49,7 +49,7 @@
 ### Stories
 - **E3-S1:** Deterministic matcher v1
   - Acceptance criteria:
-    - Match key uses GSTIN + normalized invoice_no + amount thresholds
+    - Match key uses canonical invoice ID: `vendor_gstin + normalized_invoice_no + invoice_date`
     - Produces match state: `exact_match`, `candidate`, `unmatched`
 - **E3-S2:** Exception taxonomy engine
   - Acceptance criteria:

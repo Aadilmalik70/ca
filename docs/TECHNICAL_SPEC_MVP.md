@@ -35,9 +35,10 @@
 | source_type | enum | yes | `books` or `gstr2b` |
 | client_id | uuid | yes | tenant-scoped |
 | period | text | yes | format `YYYY-MM` |
+| canonical_invoice_id | text | yes | unique within `client_id` + `period` + `source_type`; generated as `vendor_gstin + normalized_invoice_no + invoice_date` |
 | vendor_gstin | text | yes | normalized uppercase |
 | vendor_name | text | no | optional in 2B |
-| invoice_no | text | yes | stripped and uppercased |
+| normalized_invoice_no | text | yes | invoice number after normalization (trim whitespace, remove separators, uppercase) |
 | invoice_date | date | yes | ISO date |
 | taxable_value | numeric(14,2) | yes | non-negative |
 | cgst | numeric(14,2) | no | default 0 |
@@ -50,9 +51,9 @@
 ## 4. Matching rules
 
 ### Deterministic rules (priority order)
-1. Exact key match: `vendor_gstin + invoice_no + taxable_value + total_tax`
-2. Amount tolerance match: same key with amount delta <= ₹1
-3. Period drift candidate: same key found in adjacent period (N-1/N+1)
+1. Canonical identity match: `canonical_invoice_id` as primary key (`vendor_gstin + normalized_invoice_no + invoice_date`)
+2. Amount/tax validation on canonical matches: compare `taxable_value` and tax components to classify `exact_match` vs `value_mismatch` (including tolerance checks)
+3. Period drift candidate: same canonical identity found in adjacent period (N-1/N+1)
 
 ### Fuzzy rules (executed on unmatched)
 - Candidate window by same GSTIN and similar invoice number (Levenshtein threshold)
